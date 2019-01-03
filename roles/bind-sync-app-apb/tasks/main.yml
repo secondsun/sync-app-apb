@@ -1,0 +1,28 @@
+---
+# create binding secrets
+
+- name: "Create sync secret yaml file"
+  template:
+    src: binding_secret.yml.j2
+    dest: /tmp/secret.yaml
+
+- name: "Create binding secret"
+  shell: "oc create -f /tmp/secret.yaml -n {{ namespace }}"
+
+- name: "Delete binding Secret Template File"
+  file: path=/tmp/secret.yaml state=absent
+
+- name: Store the name of the binding secret to be used in unbind
+  asb_encode_binding:
+    fields:
+      namespace: "{{ namespace }}"
+      CLIENT_ID: "{{ CLIENT_ID }}"
+  when: APB_TEST is not defined
+
+- name: Populate {{ CLIENT_ID }} APB bind credentials
+  set_fact:
+    _apb_bind_creds: "{{ _apb_bind_creds|default({}) | combine( {item.name: item.value} ) }}"
+  with_items:
+    - { name: CLIENT_ID, value: '{{ CLIENT_ID }}' }
+  when: not encode_asb_binding
+  no_log: yes

@@ -1,0 +1,7 @@
+---
+# Delete client secret
+- name: Delete {{ _apb_bind_creds.CLIENT_ID }}-sync-secret
+  k8s_v1_secret:
+    name: "{{ _apb_bind_creds.CLIENT_ID }}-sync-secret"
+    namespace: "{{ namespace }}"
+    state: absent
