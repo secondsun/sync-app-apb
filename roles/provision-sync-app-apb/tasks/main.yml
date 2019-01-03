@@ -54,13 +54,15 @@
     labels:
       app: sync-app
       service: sync-app
+      mobile: enabled
     selector:
       app: sync-app
-      service: sync-app
     ports:
       - name: web
         port: 443
         target_port: '{{ SYNC_APP_PORT }}'
+  register: sync-app_service
+
 
 - name: Create sync-app https route
   openshift_v1_route:
