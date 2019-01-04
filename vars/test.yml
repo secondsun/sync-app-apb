@@ -4,6 +4,8 @@ sync_app_docker_image: "docker.io/aerogear/voyager-server-example-task"
 sync_app_docker_image_version: "latest"
 sync_app_health_endpoint: ""
 sync_app_graphql_endpoint: "graphql"
+_apb_service_instance_id: 'dummy_service_instance_id'
+CLIENT_ID: test
 SYNC_APP_PORT: 3000
 DB_HOSTNAME: "db.example.com"
 DB_PORT: "5671"
