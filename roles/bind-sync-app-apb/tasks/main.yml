@@ -1,22 +1,38 @@
 ---
+
+- name: "Retrieve route to keycloak"
+  shell: "oc get routes/sync-app -n '{{ namespace }}' -o jsonpath='{.spec.host}'"
+  register: sync_route
+
+- set_fact:
+    URI: "{{ sync_route.stdout }}"
+
 # create binding secrets
-
-- name: "Create sync secret yaml file"
-  template:
-    src: binding_secret.yml.j2
-    dest: /tmp/secret.yaml
-
-- name: "Create binding secret"
-  shell: "oc create -f /tmp/secret.yaml -n {{ namespace }}"
-
-- name: "Delete binding Secret Template File"
-  file: path=/tmp/secret.yaml state=absent
-
+- name: Creating {{ CLIENT_ID }} client secret
+  k8s_v1_secret:
+    name: "sync-app-{{ CLIENT_ID | lower }}"
+    namespace: '{{ namespace }}'
+    annotations:
+      configType: "json"
+    labels:
+      mobile: enabled
+      serviceName: "sync-app-{{ CLIENT_ID }}"
+      clientId: "{{ CLIENT_ID }}"
+      serviceName: "sync-app-{{ CLIENT_ID }}"
+      name: "sync-app-{{ CLIENT_ID | lower }}"
+      serviceInstanceID: '{{ _apb_service_instance_id }}'
+    string_data:
+      uri: "{{ URI }}"
+      config: "{'uri':\"{{ URI }}/graphql\"}"
+      name: "sync-app-{{ CLIENT_ID }}"
+      type: "sync-app" 
+      
 - name: Store the name of the binding secret to be used in unbind
   asb_encode_binding:
     fields:
       namespace: "{{ namespace }}"
       CLIENT_ID: "{{ CLIENT_ID }}"
+      URI: "{{ URI }}"
   when: APB_TEST is not defined
 
 - name: Populate {{ CLIENT_ID }} APB bind credentials
@@ -24,5 +40,7 @@
     _apb_bind_creds: "{{ _apb_bind_creds|default({}) | combine( {item.name: item.value} ) }}"
   with_items:
     - { name: CLIENT_ID, value: '{{ CLIENT_ID }}' }
+    - { name: URI, value: '{{ URI }}' }    
   when: not encode_asb_binding
   no_log: yes
+
