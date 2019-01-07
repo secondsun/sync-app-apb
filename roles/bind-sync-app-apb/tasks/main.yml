@@ -1,5 +1,13 @@
 ---
 
+- name: get tag
+  shell: tr -d -c "a-zA-Z0-9" < /dev/urandom | head -c 20
+  register: tag_out
+
+- set_fact:
+    TAG: "{{ tag_out.stdout  | lower }}"
+
+
 - name: "Retrieve route to sync"
   shell: "oc get routes/sync-app -n '{{ namespace }}' -o jsonpath='{.spec.host}'"
   register: sync_route
@@ -25,7 +33,7 @@
 # create binding secrets
 - name: Creating {{ CLIENT_ID }} client secret
   k8s_v1_secret:
-    name: "sync-app-{{ CLIENT_ID | lower }}"
+    name: "sync-app-{{ CLIENT_ID | lower }}-{{TAG}}"
     namespace: '{{ namespace }}'
     annotations:
       configType: "json"
@@ -34,12 +42,12 @@
       serviceName: "sync-app-{{ CLIENT_ID }}"
       clientId: "{{ CLIENT_ID }}"
       serviceName: "sync-app-{{ CLIENT_ID }}"
-      name: "sync-app-{{ CLIENT_ID | lower }}"
+      name: "sync-app-{{ CLIENT_ID | lower }}-{{TAG}}"
       serviceInstanceID: '{{ _apb_service_instance_id }}'
     string_data:
       uri: "https://{{ URI }}/graphql"
       config: "{{ config | to_json }}"
-      name: "sync-app-{{ CLIENT_ID }}"
+      name: "sync-app-{{ CLIENT_ID }}-{{TAG}}"
       type: "sync-app" 
       
 - name: Store the name of the binding secret to be used in unbind
@@ -48,13 +56,16 @@
       namespace: "{{ namespace }}"
       CLIENT_ID: "{{ CLIENT_ID }}"
       URI: "{{ URI }}"
+      TAG: "{{ TAG }}"
   when: APB_TEST is not defined
 
 - name: Populate {{ CLIENT_ID }} APB bind credentials
   set_fact:
     _apb_bind_creds: "{{ _apb_bind_creds|default({}) | combine( {item.name: item.value} ) }}"
   with_items:
+    - { name: namespace, value: '{{ namespace }}' }
     - { name: CLIENT_ID, value: '{{ CLIENT_ID }}' }
     - { name: URI, value: '{{ URI }}' }    
+    - { name: TAG, value: '{{ TAG }}' }        
   when: not encode_asb_binding
   no_log: yes
