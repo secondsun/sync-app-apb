@@ -7,6 +7,21 @@
 - set_fact:
     URI: "{{ sync_route.stdout }}"
 
+#  Load config from json
+- name: Generate config template
+  template:
+    src: config.json.j2
+    dest: /tmp/config.json
+
+- shell: cat /tmp/config.json
+  register: result
+
+- set_fact:
+    config: "{{ result.stdout | from_json }}"
+
+- name: Delete config template file
+  file: path=/tmp/config.json state=absent
+
 # create binding secrets
 - name: Creating {{ CLIENT_ID }} client secret
   k8s_v1_secret:
@@ -23,7 +38,7 @@
       serviceInstanceID: '{{ _apb_service_instance_id }}'
     string_data:
       uri: "https://{{ URI }}/graphql"
-      config: "{}"
+      config: "{{ config | to_json }}"
       name: "sync-app-{{ CLIENT_ID }}"
       type: "sync-app" 
       

@@ -1,6 +1,6 @@
 ---
 
-- name: "Test|Check that sync binding secret exists"
+- name: "Test|Check that sync binding secret does not exists"
   shell: "oc get secrets -o name | grep sync-app-test"
   register: sync_secret
   failed_when: "'sync-app-test' in sync_secret.stdout"
