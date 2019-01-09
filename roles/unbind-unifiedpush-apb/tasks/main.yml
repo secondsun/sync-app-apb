@@ -1,2 +1,0 @@
-- debug:
-    msg: "Sync does not need to release resources on unbind.."
