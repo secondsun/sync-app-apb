@@ -1,2 +1,2 @@
 - name: Delete all sync-app resources by app label (limited to deploymentconfig,buildconfig,service,imagestream,route and pod)
-  shell: oc delete all -l app=sync-app -n '{{ namespace }}'
+  shell: oc delete all -l app=sync-app-{{ _apb_provision_creds.SYNC_APP_NAME }} -n '{{ namespace }}'
