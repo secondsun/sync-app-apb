@@ -1,3 +1,12 @@
+- name: Config Map Template
+  template:
+    src: config.yaml.j2
+    dest: /tmp/foo.yaml
+
+- name: create configmap
+  shell: oc create configmap -n "{{ namespace }}" "{{ _apb_service_instance_id }}" --from-file=/tmp/foo.yaml
+
+
 - name: Create sync-app deployment config
   openshift_v1_deployment_config:
     name: sync-app-{{ SYNC_APP_NAME }}
@@ -98,6 +107,39 @@
           name: "{{ sync_app_docker_image }}:{{ sync_app_docker_image_version }}"
         importPolicy:
           scheduled: true
+
+- block:
+    - name: "Get service instance name by id"
+      shell: oc  get -n {{ namespace }} serviceinstance -o=jsonpath='{.items[?(@.spec.externalID=="{{ _apb_service_instance_id }}")].metadata.name}'
+      register: get_service_instance_out
+      when: service_instance_test is undefined
+  rescue:
+    ####################################
+    # Custom Error Message
+    ####################################
+    - name: Writing Termination Message '/dev/termination-log'
+      shell: echo "[Creating a DC Error] - {{ ansible_failed_result.msg }}" > /dev/termination-log
+    - fail: msg="[Bundle Failed! - ServiceInstance - '{{ _apb_service_instance_id | default('no _apb_service_instance_id')}}'] "
+
+- set_fact:
+    SERVICE_INSTANCE_NAME: "{{ get_service_instance_out.stdout  | default(service_instance_test) | lower }}"
+    when: get_service_instance_out.stdout  is defined
+
+- set_fact:
+    SERVICE_INSTANCE_NAME: "{{ service_instance_test }}"
+    when: get_service_instance_out.stdout  is undefined
+
+- block:
+    - name: "Apply patch"
+      shell: oc patch  -n {{ namespace }}  serviceinstance {{ SERVICE_INSTANCE_NAME }} -p '{ "metadata":{"labels":{"mdcName":"{{ SYNC_APP_NAME }}"}  }}'
+      when: service_instance_test is undefined
+  rescue:
+    ####################################
+    # Custom Error Message
+    ####################################
+    - name: Writing Termination Message '/dev/termination-log'
+      shell: echo "[Creating a DC Error] - {{ ansible_failed_result.msg }}" > /dev/termination-log
+    - fail: msg="[PATCH Failed! - Service Instance - '{{ SERVICE_INSTANCE_NAME  | default('no SERVICE_INSTANCE_NAME') }}'] "
 
 # Check the containers in the sync-app pod and make sure they are all ready
 - name: "Wait for all sync-app containers to become ready"

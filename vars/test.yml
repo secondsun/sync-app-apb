@@ -5,12 +5,13 @@ sync_app_docker_image_version: "latest"
 sync_app_health_endpoint: ""
 sync_app_metrics_endpoint: "metrics"
 sync_app_graphql_endpoint: "graphql"
-_apb_service_instance_id: 'dummy_service_instance_id'
+_apb_service_instance_id: 'dummy-service-instance-id'
 _apb_provision_creds: 
   SYNC_APP_NAME: "test"
 CLIENT_ID: test
 SYNC_APP_NAME: "test"
 SYNC_APP_PORT: 3000
+SERVICE_INSTANCE_NAME: "test"
 DB_HOSTNAME: "db.example.com"
 DB_PORT: "5671"
 DB_USERNAME: "user"
@@ -18,3 +19,4 @@ DB_PASSWORD: "password"
 DB_NAME: "mydb"
 DB_SSL: "false"
 encode_asb_binding: false
+service_instance_test: "test"
