@@ -33,6 +33,12 @@ plans:
         type: string
         required: False
         title: Sync Application health endpoint
+      - name: SYNC_APP_METRICS_ENDPOINT
+        description: Metrics endpoint of your Sync Application (using '/metrics' if not specified)
+        type: string
+        required: False
+        title: Sync Application metrics endpoint
+        default: 'metrics'
       - name: SYNC_APP_PORT
         description: Port of the Sync Application to Expose
         type: number

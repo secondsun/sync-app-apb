@@ -12,6 +12,8 @@
     spec_template_metadata_labels:
       app: sync-app
       service: sync-app
+    spec_template_metadata_annotations:
+      org.aerogear.metrics/plain_endpoint: '{{ sync_app_metrics_endpoint }}'
     triggers:
     - imageChangeParams:
         automatic: true
@@ -27,6 +29,9 @@
     - name: sync-app
       image: '{{ sync_app_docker_image }}:{{ sync_app_docker_image_version }}'
       imagePullPolicy: Always
+      ports:
+        - containerPort: '{{ SYNC_APP_PORT }}'
+          protocol: "TCP"
       readinessProbe:
         httpGet:
           path: '/{{ sync_app_health_endpoint }}'
