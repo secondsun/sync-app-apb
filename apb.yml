@@ -20,6 +20,12 @@ plans:
       mobileclient_bind_parameters_data:
         - '{}'
     parameters:
+      - name: SYNC_APP_NAME
+        description: The name of your sync application.
+        type: string
+        pattern: "^[a-zA-Z][a-zA-Z0-9]*$"
+        required: True
+        title: Sync Application Name
       - name: SYNC_APP_DOCKER_IMAGE
         description: URL of your Sync Application Docker Image, e.g. docker.io/aerogear/voyager-server-example-task
         type: string
