@@ -10,7 +10,7 @@ _apb_provision_creds:
   SYNC_APP_NAME: "test"
 CLIENT_ID: test
 SYNC_APP_NAME: "test"
-SYNC_APP_PORT: 3000
+SYNC_APP_PORT: 4000
 SERVICE_INSTANCE_NAME: "test"
 DB_HOSTNAME: "db.example.com"
 DB_PORT: "5671"
