@@ -1,2 +1,10 @@
+- k8s_v1_config_map:
+    namespace: "{{ namespace }}"
+    name: "{{ _apb_service_instance_id }}"
+  register: config
+
+- debug:
+    msg: "{{ config.config_map.data['foo.yaml'] | replace('\n', '') | replace('SYNC_APP_NAME: ', '') }}"
+
 - name: Delete all sync-app resources by app label (limited to deploymentconfig,buildconfig,service,imagestream,route and pod)
-  shell: oc delete all -l app=sync-app-{{ _apb_provision_creds.SYNC_APP_NAME }} -n '{{ namespace }}'
+  shell: "oc delete all -l app=sync-app-{{ config.config_map.data['foo.yaml'] | replace('\n', '') | replace('SYNC_APP_NAME: ', '') }} -n '{{ namespace }}'"
